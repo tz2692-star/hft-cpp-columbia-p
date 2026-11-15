@@ -1,0 +1,14 @@
+═══ AlgoArena latency benchmark — SELF-TEST (100000 synthetic snapshots) — ../hft-phase2-baseline/hft/cpp_client/build/hft_bot --replay ═══
+  snapshots fed   : 100,000  (warmup 1,000 discarded, 99,000 timed)
+  throughput      : 69,754 snapshots/sec  over 1.434s wall
+
+  latency distribution (microseconds) — HFT is won on the TAIL:
+    p50            8.12 µs  ······························
+    p90            9.42 µs  ······························
+    p99           17.29 µs  ······························
+    p99.9         48.50 µs  ██····························  ← TAIL
+    max          669.58 µs  ██████████████████████████████  ← TAIL
+    min            6.42 µs
+    mean           8.62 µs
+
+  VERDICT: p99.9 = 48.5 µs  (this is the number that ranks an HFT bot; a low p50 with a high p99.9 still loses the race)

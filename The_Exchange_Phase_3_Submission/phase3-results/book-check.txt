@@ -1,0 +1,1 @@
+[book-check] snapshots=0 matched=0 mismatched=0 rejected=0

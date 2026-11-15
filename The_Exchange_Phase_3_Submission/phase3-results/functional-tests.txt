@@ -1,0 +1,12 @@
+c++ -std=c++17 -O2 -pthread -Iinclude -Itests tests/spsc_correctness.cpp -o /tmp/spsc && /tmp/spsc
+RESULT|basic|pass|push/pop/empty behave
+RESULT|empty_pop|pass|pop on empty returns false
+RESULT|full|pass|filled 64 then push=false, full()=true
+RESULT|fifo|pass|FIFO order preserved over 1000 values
+RESULT|wrap|pass|wrap-around correct over 200k cycles
+c++ -std=c++17 -O2 -Wall -Wextra -pthread -Iinclude tests/pipeline_test.cpp -o /tmp/hft_pipeline_test
+/tmp/hft_pipeline_test
+pipeline tests passed
+c++ -std=c++17 -O2 -Wall -Wextra -pthread tests/strategy_test.cpp -o /tmp/hft_strategy_test
+/tmp/hft_strategy_test
+strategy tests passed (including allocation guard)

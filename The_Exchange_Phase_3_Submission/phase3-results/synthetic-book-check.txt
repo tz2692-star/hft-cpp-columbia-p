@@ -1,0 +1,11 @@
+LAT ABC 85
+LAT DEF 6
+LAT ABC 5
+LAT DEF 4
+LAT ABC 3
+LAT DEF 3
+LAT ABC 3
+LAT DEF 3
+LAT ABC 3
+LAT DEF 3
+[book-check] snapshots=1000 matched=1000 mismatched=0 rejected=0

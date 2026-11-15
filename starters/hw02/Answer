@@ -1,0 +1,79 @@
+# HW 2 — Pointers, References, and the Cost of a Copy
+## My machine and build
+
+| Item | Configuration |
+|---|---|
+| CPU | 12th Gen Intel(R)Core(TM) i7-12700H 2.30 GHz |
+| RAM | 16.0 GB RAM 4800 MT/s|
+| OS | Ubuntu 24.04 under WSL |
+| Architecture | x86-64 |
+| Compiler | g++ 13.3.0 |
+| C++ standard | C++17 (`__cplusplus = 201703L`) |
+| Optimization | Release optimization detected; output reports `-O2/-O3` |
+| Clock | `std::chrono::steady_clock` (monotonic) |
+| Warm-up | Whole batches before the first sample |
+| Optimization guard | `doNotOptimize()` on every result |
+| Statistics | p50, p99, p99.9 over samples, plus mean |
+| Noise precautions | laptop on power |
+
+
+
+## Table 1 — Swap correctness
+
+| Function | a before | b before | a after | b after | Result |
+|---|---:|---:|---:|---:|---|
+| `swap_ref` | 3 | 9 | 9 | 3 | OK |
+| `swap_ptr` | 3 | 9 | 9 | 3 | OK |
+| `swap_ptr(&a, &a)` | 5 | 5 | 5 | 5 | OK |
+
+Both swap functions exchange the original integer values. References provide aliases for the caller's variables; pointers require dereferencing to access those values. The aliasing test confirms that passing the same variable twice leaves its value unchanged in this run.
+
+## Table 2 — Passing a 648-byte struct: value versus const reference
+
+Times are in nanoseconds per call, using 1,000 samples with 2,000 calls per sample.
+
+| Variant | p50 | p99 | p99.9 | Mean |
+|---|---:|---:|---:|---:|
+| `sum_by_value(Big)` | 27.390 | 58.785 | 157.909 | 29.297 |
+| `sum_by_cref(const Big&)` | 13.789 | 37.155 | 73.004 | 14.747 |
+
+- Reported p50 value/reference ratio: **1.99×**.
+- Correctness: both functions return **7191.0**, an equal, nonzero result.
+- Reported checksum: **30202200000.0**.
+
+Passing by value gives the function its own object, whereas passing by const reference provides access to the existing object without requiring a parameter copy. In this run, the median time for the value version is approximately twice that of the reference version. The result is consistent with additional copying overhead, although generated machine code would be needed to establish exactly how the compiler implements each call. Const references are useful for reading larger objects while avoiding unnecessary copies.
+
+
+## Table 3 — Contiguous vector versus linked-list traversal
+
+Times are in nanoseconds per element, using 200 samples with one full traversal per sample.
+
+| Variant | p50 | p99 | p99.9 | Mean |
+|---|---:|---:|---:|---:|
+| `sum_vector` (contiguous) | 0.261 | 0.791 | 1.625 | 0.299 |
+| `sum_list` (pointer chase) | 80.804 | 97.073 | 99.167 | 81.859 |
+
+- Reported p50 list/vector ratio: **310.15×** (based on the benchmark's unrounded measurements).
+- Vector sum: **549755289600**.
+- List sum: **549755289600**.
+- Expected sum: **549755289600**. Both correctness checks pass.
+- Reported bytes touched: vector **4.0 MB**; list **16.0 MB**. These figures do not establish total memory traffic or allocator overhead.
+
+## Explanation A — References versus pointers
+
+With `swap_ref(int&, int&)`, the callee receives aliases for the caller's integers; with `swap_ptr(int*, int*)`, it receives copies of their addresses. Neither approach needs to copy the original integers just to pass the arguments. On typical x86-64 builds, references and pointers are both implemented using addresses and can produce equivalent optimized swap code. A pointer needs `*` to access the integer it points to, while a reference already names the integer. Swapping the local pointer variables only exchanges local address copies and leaves the caller's integers and pointer variables unchanged. 
+
+A caller can pass `nullptr` to a pointer parameter, so the function must either check for null or require valid pointers as a precondition. A reference parameter requires a valid object; creating a reference by dereferencing null is not a valid alternative. I did not add a validation check. For a hot-path swap of two required, valid integers, I would choose references because they express that requirement clearly.
+
+## Explanation B — Contiguous storage versus pointer chasing
+
+With 4-byte integers, one 64-byte cache line holds **16 vector elements**, all useful to the sum. Each 16-byte node contains only **4 bytes of integer payload**; the next pointer and padding account for the remaining space. A line can hold four tightly packed nodes, but the shuffled traversal may next visit a completely different line, so fetching a line does not guarantee useful nearby work. Allocation overhead is additional and is not included in `sizeof(Node)`.
+
+The vector's sequential access pattern lets the hardware prefetcher anticipate upcoming cache lines and can enable compiler vectorization. In the shuffled list, the next address depends on the current node's `next` field. An ordinary sequential/stride prefetcher cannot reliably predict those shuffled addresses. Each dependent pointer load must complete before the next hop's address is known, so cache misses along the chain tend to serialize instead of overlapping. A miss on every hop is not guaranteed, but this layout makes memory latency much harder to hide. The slowdown comes from memory access patterns and cache misses, not from pointers being inherently slow.
+
+Both traversals sum the same number of integers and return the same result, yet the list's reported p50 per element is 310.15 times the vector's. This supports the course's choice of a flat array for the HW 7 order book instead of a node-based `map`: contiguous storage improves locality and avoids dependent node-to-node accesses for traversal. It does not imply that an array is the best choice for every operation or workload.
+
+
+## By-value overhead prediction
+My laptop has 16 GB of RAM configured as two 8 GB modules running at 4800 MT/s, each with a 64-bit data width. Assuming both memory channels are active, the theoretical bandwidth is 76.8 GB/s. At that bandwidth, transferring 648 bytes would take approximately 8.4 ns. A copy requires both reading and writing, giving a simple traffic-based estimate of approximately 16.9 ns. The measured by-value overhead of 13.601 ns is therefore of the same order of magnitude. This comparison is approximate because the small, repeatedly accessed object may remain in CPU cache, and theoretical RAM bandwidth is not necessarily achieved by the benchmark.
+

@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/tianyunzhang/Documents/Columbia/Programming for FE/project2/hft-cpp-columbia/hft/cpp_client/build-tsan/cmake_install.cmake",
+		"/Users/tianyunzhang/Documents/Columbia/Programming for FE/project2/hft-cpp-columbia/hft/cpp_client/build-tsan/_deps/nlohmann_json-build/cmake_install.cmake",
+		"/Users/tianyunzhang/Documents/Columbia/Programming for FE/project2/hft-cpp-columbia/hft/cpp_client/build-tsan/_deps/ixwebsocket-build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

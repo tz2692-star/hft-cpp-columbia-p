@@ -1,4 +1,0 @@
-order_ack queue_ahead=0: HOLD
-order_ack queue_ahead=5000: CANCEL
-queue_update queue_ahead=0: HOLD
-queue_update queue_ahead=5000: CANCEL

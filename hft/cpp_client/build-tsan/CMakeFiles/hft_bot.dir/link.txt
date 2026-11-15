@@ -1,0 +1,1 @@
+/usr/bin/c++ -O2 -g -DNDEBUG -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names -fsanitize=thread CMakeFiles/hft_bot.dir/src/main.cpp.o CMakeFiles/hft_bot.dir/src/arena_client.cpp.o -o hft_bot  _deps/ixwebsocket-build/libixwebsocket.a /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/libz.tbd

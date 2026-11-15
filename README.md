@@ -57,6 +57,46 @@ write-up. See `starters/hw02/README.md`.
 (Phase 3) and `include/shm_ring.hpp` (Phase 4) are graded here too. See
 `project/README.md` and `docs/HFT_CPP_CLIENT.md`.
 
+### HW 10 — An SPSC lock-free ring buffer
+
+#### Run
+
+From the repository root, run:
+
+```bash
+make spsc          # Check push, pop, empty, full, FIFO order, and wraparound
+make spsc-stress   # Run the two-thread stress test with optimization
+make spsc-tsan     # Run the same stress test with ThreadSanitizer
+```
+
+The stress-test targets default to 5,000,000 items. To change the item count,
+run `make spsc-tsan SPSC_N=200000` or pass `SPSC_N` to `make spsc-stress`.
+
+#### Environment
+
+The local targets require `make`, a C++17 compiler, and POSIX threads.
+`make spsc-tsan` also requires a toolchain with a ThreadSanitizer runtime.
+The measurements below were taken on macOS 15.2 (arm64) with Apple Clang 16.0.0
+and GNU Make 3.81. The course autograder runs separately on GitHub Actions
+using Ubuntu and GCC.
+
+#### SPSC stress test
+
+Both measured runs transferred 5,000,000 items through a ring with 65,536 slots.
+The producer pushes increasing integers from zero, and the consumer checks
+each value against the expected sequence. After joining both threads, the test
+checks that both counts match the requested total and that the queue is empty.
+
+One local run per build passed all checks. ThreadSanitizer reported no data races.
+
+| Build | Elapsed time | Items transferred per second |
+|---|---:|---:|
+| Optimized (`-O2`) | 0.309 s | 16.20 million |
+| ThreadSanitizer (`-O1 -g -fsanitize=thread`) | 2.801 s | 1.79 million |
+
+Timing covers thread creation through both joins. Throughput counts each
+completed push/pop pair as one item.
+
 ## Requirements
 
 A C++17 compiler (`g++`/`clang++`), `cmake` (for the arena client), `python3`,

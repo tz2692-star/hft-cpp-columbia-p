@@ -1,0 +1,26 @@
+Start testing: Nov 11 19:55 EST
+----------------------------------------------------------
+1/1 Testing: bot_pipeline
+1/1 Test: bot_pipeline
+Command: "/Users/tianyunzhang/Documents/Columbia/Programming for FE/project2/hft-cpp-columbia/hft/cpp_client/build-tsan/bot_pipeline_test"
+Directory: /Users/tianyunzhang/Documents/Columbia/Programming for FE/project2/hft-cpp-columbia/hft/cpp_client/build-tsan
+"bot_pipeline" start time: Nov 11 19:55 EST
+Output:
+----------------------------------------------------------
+LAT ABC 32
+[arena] connection closed (1000: Normal closure) — reconnecting
+LAT ABC 58
+[pipeline] processed=12 errors=0 dropped_latency=0
+[arena] connection closed (1000: Normal closure) — reconnecting
+[pipeline] processed=0 errors=0 dropped_latency=0
+[pipeline] processed=0 errors=0 dropped_latency=0
+bot callback, replay, fault, and shutdown integration tests passed
+<end of output>
+Test time =   0.93 sec
+----------------------------------------------------------
+Test Passed.
+"bot_pipeline" end time: Nov 11 19:55 EST
+"bot_pipeline" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 11 19:55 EST

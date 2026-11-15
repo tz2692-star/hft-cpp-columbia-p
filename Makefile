@@ -15,7 +15,9 @@ u64toa:  ; $(CXX) $(CXXFLAGS) tests/u64toa_test.cpp  -o /tmp/u64toa  && /tmp/u64
 rolling: ; $(CXX) $(CXXFLAGS) tests/rolling_counter_test.cpp -o /tmp/rolling && /tmp/rolling
 spsc:    ; $(CXX) $(CXXFLAGS) tests/spsc_correctness.cpp -o /tmp/spsc && /tmp/spsc
 
-.PHONY: pipeline-test pipeline-tsan strategy-test strategy-tsan
+.PHONY: spsc-stress spsc-tsan pipeline-test pipeline-tsan strategy-test strategy-tsan
+
+SPSC_N ?= 5000000
 
 # GCC's TSan shadow layout can conflict with Linux/WSL ASLR. Disable ASLR
 # only for this test process, keeping sanitizer instrumentation and failures.
@@ -25,6 +27,14 @@ TSAN_RUNNER ?= setarch $(shell uname -m) -R
 else
 TSAN_RUNNER ?=
 endif
+
+spsc-stress:
+	$(CXX) $(CXXFLAGS) tests/spsc_concurrency.cpp -o /tmp/hft_spsc_stress
+	SPSC_N=$(SPSC_N) /tmp/hft_spsc_stress
+
+spsc-tsan:
+	$(CXX) $(CXXFLAGS) -O1 -g -fsanitize=thread tests/spsc_concurrency.cpp -o /tmp/hft_spsc_tsan
+	SPSC_N=$(SPSC_N) TSAN_OPTIONS=halt_on_error=1 $(TSAN_RUNNER) /tmp/hft_spsc_tsan
 
 pipeline-test:
 	$(CXX) -std=c++17 -O2 -Wall -Wextra -pthread -Iinclude tests/pipeline_test.cpp -o /tmp/hft_pipeline_test
